@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>python学科录题系统</title>
+
+        <script type="text/javascript" src="{% static "resource/jquery_1.12.1.min.js" %}"></script>
+
+        <link rel="stylesheet" href="{% static "resource/bootstrap.min.css" %}">
+        <!-- <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css"> -->
+        <link href="{% static "resource/starter-template.css" %}" rel="stylesheet">
+
+        
+        <script>
+        $(document).ready(function(){
+                /*
+                $('#dict').click(function(){
+                    $('#dict_result').append("*******" + '<br>');
+                    })
+                */
+
+                $(".My_hide").hide();
+                $("#zeng").click(function(){
+                        $(".My_hide").show();
+                          });
+                $("#jian").click(function(){
+                        $(".My_hide").hide();
+                          });
+
+
+
+                $('#isubject').change(function(){
+
+                    var sub_id = $('#isubject').val();
+                    $('#isection').empty();
+                    $('#isection').append("<option>"+ '----------'+ "</option>");
+                    $.getJSON('/indata/choice_section/', {'sub_id':sub_id},function(ret){
+                        if(ret[0] == undefined)
+                        {
+                            $('#isection').append("<option>"+''+"</option>");
+                        }
+                        for(var i in ret)
+                        {
+                        $('#isection').append("<option>"+ ret[i].fields.secname + "</option>");
+                        }
+                        })
+
+                    })
+
+                 $('#isection').change(function(){
+
+                    var sec_id = $('#isection').val();
+                    $('#ichapter').empty();
+                    $.getJSON('/indata/choice_chapter/',{'sec_id':sec_id},function(ret){
+                        if(ret[0]==undefined)
+                        {
+                            $('#ichapter').append("<option>"+'-----------'+"</option>");
+                        }
+                        for(var i in ret)
+                        {
+                            $('#ichapter').append("<option>"+ ret[i].fields.chaname + "</option>");
+                        }
+                        })
+                    })
+                })
+        </script>
+
+
+    </head>
+
+    <body>
+
+
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button class="navbar-toggle"  data-target=".navbar-collapse" data-toggle="collapse" type="button">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="/indata">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#iauth">Auth</a></li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="starter-template">
+                <h1>试题录入</h1>
+                <p class="lead">为正确录入，请按如下标准进行填写</p>
+                <!--调试标签-->
+                <span id="test_span"></span>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <form id="indata_form" method="post" action="/indata/index/">
+                <!--题目类型itype-->
+                <input type="hidden" name="itype" id="itype" value=""></input>
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">学科</div>
+                        <select class="form-control" name="isubject" id="isubject">
+                            <option value=404></option> 
+                            {% for sub in sublist %}
+                            <option value={{ sub.id }}> {{ sub.subname }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">阶段</div>
+                        <select class="form-control" name="isection" id="isection">
+                            <option value=404 selected="selected"></option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">章节</div>
+                        <select class="form-control" name="ichapter" id="ichapter">
+                            <option value=404 selected="selected"></option>
+                        </select>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">所属知识点</div>
+                        <input type="text" class="form-control" name="ipoints" autocomplete="on"  placeholder="请务必与提供的知识点一样,若有多个相关知识点，请用英文 , 连接">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">关键字</div>
+                        <!--<input type="text" class="form-control" name="ikeyword" required="required"  placeholder="关键字">-->
+                        <input type="text" class="form-control" name="ikeyword"  placeholder="关键字">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">难度等级</div>
+                        <label class="radio-inline"><input type="radio" name="ilevel" id="ilevelA" value="A"> A</label>
+                        <label class="radio-inline"><input type="radio" name="ilevel" id="ilevelB" value="B"> B</label>
+                        <label class="radio-inline"><input type="radio" name="ilevel" id="ilevelC" value="C"> C</label>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">题目类型</div>
+
+                        <div>
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active"><a href="#danxuan" aria-controls="danxuan" role="tab" data-toggle="tab">单选</a></li>
+                                <li role="presentation"><a href="#duoxuan" aria-controls="duoxuan" role="tab" data-toggle="tab">多选</a></li>
+                                <li role="presentation"><a href="#panduan" aria-controls="panduan" role="tab" data-toggle="tab">判断</a></li>
+                                <li role="presentation"><a href="#tiankong" aria-controls="tiankong" role="tab" data-toggle="tab">填空</a></li>
+                                <li role="presentation"><a href="#biancheng" aria-controls="biancheng" role="tab" data-toggle="tab">编程</a></li>
+                            </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="danxuan">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-11">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">题干</div>
+                                                    <textarea class="form-control" rows="3" name="q_danxuan" id="q_danxuan"></textarea>
+                                                </div>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">选项</div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-danA">A</span>
+                                                        <input type="text" class="form-control" name="danxuan_A" aria-describedby="basic-danA">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-danB">B</span>
+                                                        <input type="text" class="form-control" name="danxuan_B" aria-describedby="basic-danB">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-danC">C</span>
+                                                        <input type="text" class="form-control" name="danxuan_C" aria-describedby="basic-danC">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-danD">D</span>
+                                                        <input type="text" class="form-control" name="danxuan_D" aria-describedby="basic-danD">
+                                                    </div>
+
+                                                </div>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">答案</div>
+                                                    <label class="radio-inline"><input type="radio" name="a_danxuan" id="radio_A" value="A"> A</label>
+                                                    <label class="radio-inline"><input type="radio" name="a_danxuan" id="radio_B" value="B"> B</label>
+                                                    <label class="radio-inline"><input type="radio" name="a_danxuan" id="radio_C" value="C"> C</label>
+                                                    <label class="radio-inline"><input type="radio" name="a_danxuan" id="radio_D" value="D"> D</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="duoxuan">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-11">
+                                                <div class="panel panel-info">
+                                                    <div class="panel-heading">题干</div>
+                                                    <textarea class="form-control" rows="3" name="q_duoxuan" id="q_duoxuan"></textarea>
+                                                </div> 
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-default" id="zeng">增加选项</button>
+                                                    <button type="button" class="btn btn-default" id="jian">减少选项</button>
+                                                </div>
+                                                <div class="panel panel-info">
+                                                    <div class="panel-heading">选项</div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-duo_A">A</span>
+                                                        <input type="text" class="form-control" name="duoxuan_A" aria-describedby="basic-duo_A">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-duo_B">B</span>
+                                                        <input type="text" class="form-control" name="duoxuan_B" aria-describedby="basic-duo_B">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-duo_C">C</span>
+                                                        <input type="text" class="form-control" name="duoxuan_C" aria-describedby="basic-duo_C">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="basic-duo_D">D</span>
+                                                        <input type="text" class="form-control" name="duoxuan_D" aria-describedby="basic-duo_D">
+                                                    </div>
+                                                    <div class="input-group My_hide">
+                                                        <span class="input-group-addon" id="basic-duo_E">E</span>
+                                                        <input type="text" class="form-control" name="duoxuan_E" aria-describedby="basic-duo_E">
+                                                    </div>
+                                                    <div class="input-group My_hide">
+                                                        <span class="input-group-addon" id="basic-duo_F">F</span>
+                                                        <input type="text" class="form-control" name="duoxuan_F" aria-describedby="basic-duo_F">
+                                                    </div>
+                                                    <div class="input-group My_hide">
+                                                        <span class="input-group-addon" id="basic-duo_G">G</span>
+                                                        <input type="text" class="form-control" name="duoxuan_G" aria-describedby="basic-duo_G">
+                                                    </div>
+
+                                                </div>
+                                                <div class="panel panel-info">
+                                                    <div class="panel-heading">答案</div>
+                                                    <label class="checkbox-inline"><input type="checkbox" name="a_duoxuan" runat="server" id="check_A" value="A"> A</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" name="a_duoxuan" runat="server" id="check_B" value="B"> B</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" name="a_duoxuan" runat="server" id="check_C" value="C"> C</label>
+                                                    <label class="checkbox-inline"><input type="checkbox" name="a_duoxuan" runat="server" id="check_D" value="D"> D</label>
+                                                    <label class="checkbox-inline My_hide"><input type="checkbox" name="a_duoxuan" runat="server" id="check_E" value="E"> E</label>
+                                                    <label class="checkbox-inline My_hide"><input type="checkbox" name="a_duoxuan" runat="server" id="check_F" value="F"> F</label>
+                                                    <label class="checkbox-inline My_hide"><input type="checkbox" name="a_duoxuan" runat="server" id="check_G" value="G"> G</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="panduan">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-11">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">题干</div>
+                                                    <textarea class="form-control" rows="3" name="q_panduan" id="q_panduan"></textarea>
+                                                </div>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">答案</div>
+                                                    <label class="radio-inline"><input type="radio" name="a_panduan" id="radio_True" value='对'>正确</label>
+                                                    <label class="radio-inline"><input type="radio" name="a_panduan" id="radio_False" value='错'>错误</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tiankong">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-11">
+                                                <div class="panel panel-info">
+                                                    <div class="panel-heading">题干</div>
+                                                    <textarea class="form-control" rows="3" name="q_tiankong" id="q_tiankong" placeholder="示例：1+1=【2】"></textarea>
+                                                </div>
+                                                <div class="panel panel-info">
+                                                    <div class="panel-heading">答案</div>
+                                                    <input type="text" class="form-control" name="a_tiankong" placeholder="填空题不用写">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+                                <div role="tabpanel" class="tab-pane" id="biancheng">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-11">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">题干</div>
+                                                    <textarea class="form-control" rows="5" name="q_biancheng" id="q_biancheng"></textarea>
+                                                </div>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">答案</div>
+                                                    <textarea class="form-control" rows="18" name="a_biancheng"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                
+                            <script>
+                                $(function(){
+                                    var activeTab = "单选";
+                                    //调试标签
+                                    //$('#test_span').html(activeTab);
+                                    //设置初始值
+                                    document.getElementById("itype").value = activeTab;
+                                    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e){
+                                        // 获取已激活的标签页的名称
+                                        var activeTab = $(e.target).text(); 
+                                        //$('#test_span').html(activeTab);
+                                        //切换标签页后设置标签值
+                                        $("#itype").val(activeTab);
+                                        });
+                                    });
+                            </script>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">答案说明</div>
+                        <textarea class="form-control" rows="5" name="iexplain"></textarea>
+                    </div>
+                </div>
+
+                <!--<div class="checkbox">
+                    <label>
+                        <input type="checkbox">
+                        Check me out
+                    </label>
+                </div> -->
+                <button type="submit" class="btn btn-success" name="submit">提交</button>
+            </form>
+        </div>
+
+
+        <script src="{% static "resource/bootstrap.min.js" %}"></script>
+    </body>
+</html>
